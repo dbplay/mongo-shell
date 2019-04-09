@@ -6,4 +6,4 @@ node_js:
 after_success:
   - npm run lint
   - npm build
-  - npm test
+  - travis_retry npm test
