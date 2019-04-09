@@ -2,7 +2,7 @@
   "name": "@mplay/mongo-shell",
   "version": "0.0.1",
   "description": "a nodejs util to connect to a mongodb shell",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "build": "tsc",
     "test": "jest",
@@ -13,7 +13,7 @@
       "release": true
     },
     "scripts": {
-      "beforeStage": "npx auto-changelog"
+      "beforeStage": "npm run build && npx auto-changelog"
     },
     "git": {
       "tagName": "v${version}",
