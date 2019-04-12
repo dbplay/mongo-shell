@@ -13,14 +13,16 @@
       "release": true
     },
     "scripts": {
-      "beforeStage": "npm run build && npx auto-changelog"
+      "changelog": "npx auto-changelog --stdout --commit-limit false -u",
+      "beforeBump": "npm run build",
+      "beforeStage": "npx auto-changelog -p"
     },
     "git": {
       "tagName": "v${version}",
       "commit": true
     },
     "npm": {
-      "publish": false
+      "publish": true
     }
   },
   "lint-staged": {
@@ -59,7 +61,7 @@
     "@types/node": "^11.13.0",
     "@types/stream-to-promise": "^2.2.0",
     "@typescript-eslint/eslint-plugin": "^1.6.0",
-    "auto-changelog": "^1.12.0",
+    "auto-changelog": "^1.12.1",
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^4.1.0",
     "eslint-plugin-jest": "^22.4.1",
@@ -70,7 +72,7 @@
     "lint-staged": "^8.1.5",
     "p-wait-for": "^3.1.0",
     "prettier": "^1.16.4",
-    "release-it": "^10.4.1",
+    "release-it": "^10.4.2",
     "ts-jest": "^24.0.2",
     "typescript": "^3.4.2"
   },
