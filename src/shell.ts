@@ -1,4 +1,4 @@
-import { spawn, ChildProcessWithoutNullStreams, exec } from 'child_process';
+import { ChildProcessWithoutNullStreams, exec } from 'child_process';
 import { Readable } from 'stream';
 import { CommandIn, Logger } from './index';
 
