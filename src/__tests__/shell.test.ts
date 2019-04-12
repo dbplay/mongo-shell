@@ -2,22 +2,30 @@ import { Shell } from '../shell';
 import * as pWaitFor from 'p-wait-for';
 
 describe('Shell', () => {
+  let shell: Shell;
+
   describe('destroy', () => {
     it('kill the subprocess', async () => {
-      const mongoShell = new Shell('42', 'localhost:27017');
-      await mongoShell.init();
-      await mongoShell.destroy();
+      shell = new Shell('42', 'localhost:27017');
+      await shell.init();
+      await shell.destroy();
     });
   });
   describe('sendCommand', () => {
+    afterEach(() => {
+      if (shell) {
+        shell.destroy();
+      }
+    });
+
     it('can sends a command to a mongodb', async () => {
-      const mongoShell = new Shell('42', 'localhost:27017');
-      await mongoShell.init();
+      shell = new Shell('42', 'localhost:27017');
+      await shell.init();
       const outs = new Array<string>();
-      mongoShell.stdout.on('data', chunk => {
+      shell.stdout.on('data', chunk => {
         outs.push(chunk.toString());
       });
-      mongoShell.sendCommand({ in: 'foo=5' });
+      shell.sendCommand({ in: 'foo=5' });
       await pWaitFor(() => {
         return outs.length === 1;
       });
@@ -26,19 +34,19 @@ describe('Shell', () => {
     });
 
     it('keeps env from a call to another', async () => {
-      const mongoShell = new Shell('42', 'localhost:27017');
-      await mongoShell.init();
+      shell = new Shell('42', 'localhost:27017');
+      await shell.init();
       const outs = new Array<string>();
-      mongoShell.stdout.on('data', chunk => {
+      shell.stdout.on('data', chunk => {
         outs.push(chunk.toString());
       });
-      mongoShell.sendCommand({ in: 'foo=5' });
+      shell.sendCommand({ in: 'foo=5' });
       await pWaitFor(() => {
         return outs.length === 1;
       });
       let last = Array.from(outs).pop();
       expect(last).toEqual('5\n');
-      mongoShell.sendCommand({ in: 'foo' });
+      shell.sendCommand({ in: 'foo' });
       await pWaitFor(() => {
         return outs.length === 2;
       });

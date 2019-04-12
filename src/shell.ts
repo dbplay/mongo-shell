@@ -31,9 +31,15 @@ export class Shell {
   private async bindStdout() {
     await this.init();
     this.mongo.stdout.on('data', data => {
-      this.stdout.emit('data', data);
-      this.stdout.emit('end');
-      this.logger.debug(LOGGER_PREFIX + 'received response ' + data);
+      if (data.match(/E QUERY/)) {
+        this.logger.warn(LOGGER_PREFIX + 'received error ' + data);
+        this.stdout.emit('error', data);
+        this.stdout.emit('end');
+      } else {
+        this.stdout.emit('data', data);
+        this.stdout.emit('end');
+        this.logger.debug(LOGGER_PREFIX + 'received response ' + data);
+      }
     });
     this.mongo.stderr.on('data', data => {
       this.logger.warn(LOGGER_PREFIX + 'received error ' + data);
