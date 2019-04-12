@@ -1,6 +1,4 @@
 import { Shell } from './shell';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const streamToPromise = require('stream-to-promise');
 export interface Logger {
   debug: (message?: any) => void;
   info: (message?: any) => void;

@@ -1,6 +1,7 @@
 {
-  "name": "@mplay/mongo-shell",
+  "name": "mongodb-shell",
   "version": "0.1.0",
+  "private": false,
   "description": "a nodejs util to connect to a mongodb shell",
   "main": "lib/index.js",
   "scripts": {
@@ -75,8 +76,5 @@
     "release-it": "^10.4.2",
     "ts-jest": "^24.0.2",
     "typescript": "^3.4.2"
-  },
-  "dependencies": {
-    "stream-to-promise": "^2.2.0"
   }
 }
