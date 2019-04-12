@@ -1,4 +1,4 @@
-import { spawn, ChildProcess } from 'child_process';
+import { spawn, ChildProcessWithoutNullStreams, exec } from 'child_process';
 import { Readable } from 'stream';
 import { CommandIn, Logger } from './index';
 
@@ -9,6 +9,7 @@ export class Shell {
   private logger: Logger;
   public stdout: Readable;
   private mongoUri: string;
+  private mongo: ChildProcessWithoutNullStreams;
 
   public constructor(workerId: string, mongoUri: string, logger?: Logger) {
     this.mongoUri = mongoUri;
@@ -21,39 +22,35 @@ export class Shell {
     this.stdout = new Readable({
       read() {},
     });
+    this.mongo = exec('mongo --quiet --host ' + this.mongoUri, {
+      encoding: 'utf8',
+    }) as ChildProcessWithoutNullStreams;
+    this.bindStdout();
   }
 
-  public async init(): Promise<void> {
-    return;
-  }
-
-  public sendCommand(command: CommandIn): void {
-    const mongo = spawn('mongo', [
-      '--host',
-      this.mongoUri,
-      '--eval',
-      command.in,
-    ]);
-    mongo.stdout.on('data', data => {
-      if (data.toString().match(/MongoDB shell version/)) {
-        return;
-      }
-      if (data.toString().match(/connecting to/)) {
-        return;
-      }
-      if (data.toString().match(/MongoDB server version/)) {
-        return;
-      }
-      this.logger.debug(LOGGER_PREFIX + 'received response ' + data);
-      this.stdout.push(data);
+  private async bindStdout() {
+    await this.init();
+    this.mongo.stdout.on('data', data => {
+      this.stdout.emit('data', data);
       this.stdout.emit('end');
+      this.logger.debug(LOGGER_PREFIX + 'received response ' + data);
     });
-    mongo.stderr.on('data', data => {
+    this.mongo.stderr.on('data', data => {
       this.logger.warn(LOGGER_PREFIX + 'received error ' + data);
       this.stdout.emit('error', data);
       this.stdout.emit('end');
     });
-    this.logger.debug(LOGGER_PREFIX + 'received command ' + command.in);
-    mongo.stdin.write(command.in);
+  }
+
+  public async init(): Promise<void> {}
+
+  public async destroy(): Promise<void> {
+    this.mongo.kill();
+    delete this.mongo;
+  }
+
+  public sendCommand(command: CommandIn): void {
+    this.logger.debug(LOGGER_PREFIX + 'send command ' + command.in);
+    this.mongo.stdin.write(command.in + '\n');
   }
 }
