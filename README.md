@@ -20,4 +20,5 @@ const result = await mongoShell.sendCommand({ in: 'foo=5' });
     out: "5",
     status: "SUCCESS"
 }
+mongoShell.destroy()
 ```
