@@ -7,6 +7,7 @@ export interface Logger {
 }
 export const ERROR = 'ERROR';
 export const SUCCESS = 'SUCCESS';
+const TERMINATION_TOKEN = '$$$$8888!!!!!MPOJKJHGGHF453678HJGVHGFRY6758%%%£ùù';
 
 export interface CommandIn {
   in: string;
@@ -36,12 +37,20 @@ export class MongoShell {
 
   public async sendCommand(command: CommandIn): Promise<CommandOut> {
     return new Promise((resolve, reject) => {
+      const outs: string[] = [];
+      let resolver: NodeJS.Timeout;
+      command.in = command.in;
       this.shell.sendCommand(command);
       this.shell.stdout.on('error', data => {
         resolve({ out: data.toString().trim(), status: ERROR });
       });
       this.shell.stdout.on('data', data => {
-        resolve({ out: data.toString().trim(), status: SUCCESS });
+        // console.log(data.toString())
+        outs.push(data.toString().trim());
+        clearTimeout(resolver);
+        resolver = setTimeout(() => {
+          resolve({ out: outs.join('\n'), status: SUCCESS });
+        }, 100);
       });
     });
   }
