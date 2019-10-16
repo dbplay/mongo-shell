@@ -1,57 +1,71 @@
-import { Shell } from './shell';
+import { ChildProcessWithoutNullStreams, exec } from 'child_process';
+import { Readable } from 'stream';
+
 export interface Logger {
   debug: (message?: any) => void;
   info: (message?: any) => void;
   warn: (message?: any) => void;
   error: (message?: any) => void;
 }
-export const ERROR = 'ERROR';
-export const SUCCESS = 'SUCCESS';
-const TERMINATION_TOKEN = '$$$$8888!!!!!MPOJKJHGGHF453678HJGVHGFRY6758%%%£ùù';
-
 export interface CommandIn {
   in: string;
 }
 
-export interface CommandOut {
-  out: string;
-  status: 'ERROR' | 'SUCCESS';
-}
+const LOGGER_PREFIX = '[MongoShell] ';
 
 export class MongoShell {
   private workerId: string;
-  private shell: Shell;
+  private logger: Logger;
+  public stdout: Readable;
+  private mongoUri: string;
+  private mongo: ChildProcessWithoutNullStreams;
 
-  public constructor(mongoUri: string, previousShellId?: string) {
-    if (previousShellId) {
-      this.workerId = previousShellId;
+  public constructor(workerId: string, mongoUri: string, logger?: Logger) {
+    this.mongoUri = mongoUri;
+    this.workerId = workerId;
+    if (logger) {
+      this.logger = logger;
     } else {
-      this.workerId = Math.round(Math.random() * 1000000).toString();
+      this.logger = console;
     }
-    this.shell = new Shell(this.workerId, mongoUri);
-  }
-
-  public destroy() {
-    this.shell.destroy();
-  }
-
-  public async sendCommand(command: CommandIn): Promise<CommandOut> {
-    return new Promise((resolve, reject) => {
-      const outs: string[] = [];
-      let resolver: NodeJS.Timeout;
-      command.in = command.in;
-      this.shell.sendCommand(command);
-      this.shell.stdout.on('error', data => {
-        resolve({ out: data.toString().trim(), status: ERROR });
-      });
-      this.shell.stdout.on('data', data => {
-        // console.log(data.toString())
-        outs.push(data.toString().trim());
-        clearTimeout(resolver);
-        resolver = setTimeout(() => {
-          resolve({ out: outs.join('\n'), status: SUCCESS });
-        }, 100);
-      });
+    this.stdout = new Readable({
+      read() {},
     });
+    this.mongo = exec('mongo --quiet --host ' + this.mongoUri, {
+      encoding: 'utf8',
+    }) as ChildProcessWithoutNullStreams;
+    this.bindStdout();
+  }
+
+  private async bindStdout() {
+    await this.init();
+    this.mongo.stdout.on('data', data => {
+      if (data.match(/E QUERY/)) {
+        this.logger.warn(LOGGER_PREFIX + 'received error ' + data);
+        this.stdout.emit('error', data);
+        this.stdout.emit('end');
+      } else {
+        this.stdout.emit('data', data);
+        this.stdout.emit('end');
+        this.logger.debug(LOGGER_PREFIX + 'received response ' + data);
+      }
+    });
+    this.mongo.stderr.on('data', data => {
+      this.logger.warn(LOGGER_PREFIX + 'received error ' + data);
+      this.stdout.emit('error', data);
+      this.stdout.emit('end');
+    });
+  }
+
+  public async init(): Promise<void> {}
+
+  public async destroy(): Promise<void> {
+    this.mongo.kill();
+    delete this.mongo;
+  }
+
+  public sendCommand(command: CommandIn): void {
+    this.logger.debug(LOGGER_PREFIX + 'send command ' + command.in);
+    this.mongo.stdin.write(command.in + '\n');
   }
 }
