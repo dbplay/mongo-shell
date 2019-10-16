@@ -4,6 +4,7 @@
   "private": false,
   "description": "a nodejs util to connect to a mongodb shell",
   "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "jest",
