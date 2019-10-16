@@ -1,6 +1,6 @@
 {
   "name": "mongodb-shell",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "private": false,
   "description": "a nodejs util to connect to a mongodb shell",
   "main": "lib/index.js",
