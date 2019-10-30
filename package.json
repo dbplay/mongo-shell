@@ -60,7 +60,7 @@
   "homepage": "https://github.com/dbplay/mongo-shell#readme",
   "devDependencies": {
     "@types/jest": "24.0.19",
-    "@types/node": "11.13.0",
+    "@types/node": "11.15.2",
     "@types/stream-to-promise": "2.2.0",
     "@typescript-eslint/eslint-plugin": "1.9.0",
     "auto-changelog": "1.12.1",
