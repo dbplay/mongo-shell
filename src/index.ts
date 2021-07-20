@@ -31,7 +31,7 @@ export class MongoShell {
     this.stdout = new Readable({
       read() {},
     });
-    this.mongo = exec('mongo --quiet --host ' + this.mongoUri, {
+    this.mongo = exec('mongosh --quiet --host ' + this.mongoUri, {
       encoding: 'utf8',
     }) as ChildProcessWithoutNullStreams;
     this.bindStdout();
