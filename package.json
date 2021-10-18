@@ -76,6 +76,6 @@
     "prettier": "1.19.1",
     "release-it": "10.4.2",
     "ts-jest": "24.2.0",
-    "typescript": "3.7.4"
+    "typescript": "3.9.10"
   }
 }
